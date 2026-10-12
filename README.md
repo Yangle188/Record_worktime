@@ -126,6 +126,17 @@ npx wrangler pages deploy dist    # Cloudflare Pages，首次会要求登录
 
 > 登录与账号授权需要在你的机器上交互完成，因此这两步由你执行。
 
+**平台侧填入的构建参数**（Vercel 已由 `vercel.json` 覆盖，Cloudflare Pages 需手填）：
+
+| 参数 | 值 |
+| --- | --- |
+| Framework preset | Vite |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| 环境变量 | M1 无需任何环境变量 |
+
+**若平台构建报 Node 版本错误**：本项目用 Vite 8，需要 Node ≥ 20.19 或 ≥ 22.12（本地用的是 24.21.0 LTS）。两个平台的默认版本已满足；如需显式指定，Cloudflare Pages 可设环境变量 `NODE_VERSION=22`，Vercel 可在项目设置里选 Node 22.x。
+
 ### 首次部署后请验收
 
 1. 首页能打开，顶部显示「已同步」与偏差值 —— 说明时间源在 HTTPS 下可达；
