@@ -83,7 +83,8 @@
 2. ✅ 生成 `docs/TECH-DESIGN.md`（本地表结构、数据流、状态机、目录结构、坐标转换、备份格式）；
 3. ✅ 生成 `docs/TASKS.md`；
 4. ✅ 按 M1 里程碑搭建项目骨架并实现打卡核心（M1-00 ~ M1-16，见 `docs/TASKS.md`）；
-5. ⏳ M2 统计与可视化（日 / 周 / 月工时、目标达成率、ECharts 柱状图）。
+5. 🚧 部署准备（已内置 `vercel.json` 与 `public/_redirects`，待登录平台执行，见 README「部署」）；
+6. ⏳ M2 统计与可视化（日 / 周 / 月工时、目标达成率、ECharts 柱状图）。
 
 ## 本地开发
 
@@ -96,5 +97,45 @@ npm run dev      # http://localhost:5173
 npm test         # 50 个单元 / 集成测试
 npm run build    # tsc --noEmit && vite build
 ```
+
+---
+
+## 部署
+
+纯静态托管即可，**必须 HTTPS**（定位 API 要求安全上下文）。仓库已内置两个平台的配置：
+
+| 平台 | 配置文件 | 作用 |
+| --- | --- | --- |
+| Vercel | [`vercel.json`](vercel.json) | 指定构建命令 / 输出目录；把前端路由的深层链接回退到 `index.html`；补两个安全响应头 |
+| Cloudflare Pages / Netlify | [`public/_redirects`](public/_redirects) | 同上；构建后自动出现在 `dist/_redirects` |
+
+> 应用使用 `BrowserRouter`，`/timeline`、`/settings` 是真实 URL。静态托管默认会为这些路径找同名文件并返回 404，所以必须配置回退 —— 这是「本地能跑、线上打不开」最常见的原因。
+
+### 最短路径
+
+**A. Git 集成（推荐，之后 push 即自动部署）**：把仓库推到 GitHub → 平台侧 Import Project → 构建命令 `npm run build`、输出目录 `dist`。
+
+**B. CLI**：
+
+```bash
+export PATH="$HOME/.local/node/bin:$PATH"
+npm run build
+npx vercel deploy --prod          # Vercel，首次会要求登录
+npx wrangler pages deploy dist    # Cloudflare Pages，首次会要求登录
+```
+
+> 登录与账号授权需要在你的机器上交互完成，因此这两步由你执行。
+
+### 首次部署后请验收
+
+1. 首页能打开，顶部显示「已同步」与偏差值 —— 说明时间源在 HTTPS 下可达；
+2. 直接在地址栏访问 `/settings` 并**硬刷新**，页面正常（验证 SPA 回退）；同时在 DevTools 确认 `assets/*.js`、`icon.svg`、`manifest.webmanifest` 均为 200；
+3. 点一次打卡：弹出结果卡片；即使浏览器拒绝定位，记录仍应落库并标注「未记录地点」。
+
+### 注意事项
+
+- **数据不会跟着域名走**：IndexedDB 按源（origin）隔离，`localhost` 上的记录不会出现在部署域名下。切换域名前，先在 `localhost` 的设置页**导出 JSON 备份**，再到新域名的设置页导入。
+- 部署到 HTTPS 后建议「添加到主屏幕」：可安装的 PWA 更不容易被浏览器清理存储，这直接对应 PRD §9 的数据丢失风险。
+- M3 需要的地图 Key 通过平台环境变量注入。`VITE_` 前缀的变量**只会在构建期被打包进静态资源**（并非运行时读取），所以 Key 只能靠高德的域名白名单与调用限额来约束，切勿提交进仓库。
 
 > ⚠️ **纯本地方案的注意事项**：数据仅存在于浏览器 IndexedDB 中，清除站点数据或浏览器回收存储会导致丢失。因此**"备份提醒 + JSON 导出 / 导入"已提前到 M1**，在核心打卡功能同期落地。

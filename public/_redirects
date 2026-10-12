@@ -1,0 +1,6 @@
+# SPA 前端路由回退（Cloudflare Pages / Netlify 通用）
+#
+# 应用使用 BrowserRouter，/settings、/timeline 是真实 URL。
+# 静态托管默认会为这些路径找同名文件并返回 404，因此统一回退到 index.html，
+# 由前端路由接管（HTTP 200 而不是 301，以保留原始 URL）。
+/*    /index.html   200

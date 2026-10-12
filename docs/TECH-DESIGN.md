@@ -35,21 +35,21 @@
 
 ## 2. 技术栈与依赖
 
-| 用途 | 选型 | 依赖 |
+| 用途 | 选型 | 依赖（实际安装版本） |
 | --- | --- | --- |
-| 构建 | Vite 5 + TypeScript 5（`strict: true`） | `vite`, `typescript`, `@vitejs/plugin-react` |
-| UI | React 18 | `react`, `react-dom` |
-| 路由 | React Router | `react-router-dom` |
+| 构建 | Vite 8 + TypeScript 6（`strict: true`） | `vite`, `typescript`, `@vitejs/plugin-react` |
+| UI | React 19 | `react`, `react-dom` |
+| 路由 | React Router 7 | `react-router-dom` |
 | 本地库 | Dexie 4 | `dexie`, `dexie-react-hooks` |
-| 图表 | ECharts | `echarts`, `echarts-for-react` |
-| 地图 / 逆地理 | 高德 JS API 2.0（provider 化） | `@amap/amap-jsapi-loader` |
-| PWA | vite-plugin-pwa | `vite-plugin-pwa` |
-| 日期 | 原生 `Date` + `Intl` | 无额外依赖 |
+| 图表 | ECharts 6（自 M2 使用） | `echarts`, `echarts-for-react` |
+| 地图 / 逆地理 | 高德 JS API 2.0（provider 化，**M3 引入**） | `@amap/amap-jsapi-loader`（待装） |
+| PWA | M1 用 `public/manifest.webmanifest` + `public/icon.svg` 提供可安装能力 | 无额外依赖 |
+| 日期 | 原生 `Date`（本地时区，业务日边界用 `setMinutes` 计算，DST 安全） | 无额外依赖 |
 | ID | `crypto.randomUUID()`（HTTPS 下可用，无需依赖） | — |
-| 测试 | Vitest + fake-indexeddb | `vitest`, `fake-indexeddb`, `@testing-library/react` |
-| Lint | ESLint + Prettier | `eslint`, `prettier` |
+| 测试 | Vitest 5 + fake-indexeddb | `vitest`, `fake-indexeddb`, `@testing-library/react` |
+| Lint | ESLint 10 + Prettier | `eslint`, `prettier` |
 
-> **按里程碑引入**：图表（`echarts`、`echarts-for-react`）自 M2 起使用；PWA 的 Service Worker 缓存（`vite-plugin-pwa`）自 M5 起引入——M1 只用 `public/manifest.webmanifest` 提供可安装能力，避免 SW 在开发期缓存旧资源。
+> **按里程碑引入**：图表自 M2 起使用；`vite-plugin-pwa` 的 Service Worker 缓存自 M5 起引入——M1 不接 SW，避免开发期缓存旧资源（见 §13）。
 
 **运行环境**：Node LTS（本机安装于 `~/.local/node`，不入库）；包管理用 `npm`。提交 `package-lock.json`。
 
@@ -480,7 +480,8 @@ flowchart TD
 | --- | --- |
 | 构建 | `vite build` → `dist/` 纯静态 |
 | 部署 | Vercel / Cloudflare Pages；**必须 HTTPS**（定位 API 前提） |
-| PWA | `vite-plugin-pwa`（manifest + Workbox）；注意：**不用 SW 缓存打卡写请求**，仅预缓存静态资源 |
+| **SPA 回退** | 应用用 `BrowserRouter`，`/timeline`、`/settings` 是真实 URL，静态托管默认会 404。已内置 `vercel.json`（rewrites）与 `public/_redirects`（`/* /index.html 200`，Cloudflare Pages / Netlify 通用） |
+| PWA | M1 只用 `public/manifest.webmanifest` + `public/icon.svg` 提供**可安装**能力；Workbox / Service Worker 缓存策略留到 M5（避免开发期 SW 缓存旧资源） |
 | 高德 Key | 环境变量注入；在高德控制台配置**域名白名单 + 调用限额**（PRD §9 Key 滥用风险） |
 | CSP | 建议 `default-src 'self'`，显式放行高德域名与时间源域名，降低 XSS 面 |
 | 隐私 | 无任何上报 / 埋点 / 分析；位置数据仅存本机 |
