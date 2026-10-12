@@ -1,0 +1,19 @@
+{
+  "name": "打卡应用",
+  "short_name": "打卡",
+  "description": "个人工时记录工具：打卡即记录联网校准的时间与坐标。",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
